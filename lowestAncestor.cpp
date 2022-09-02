@@ -57,23 +57,25 @@ int lowestCommonAncestor1(Node *root, int n1, int n2)  // Time complexity for th
 }
 
 /*APPROACH 2*/
-// Node* LCA(Node* root , int n1 , int n2)
-// {
-//     if(root == NULL)
-//     {
-//         return NULL;
-//     }
+Node* LCA(Node* root , int n1 , int n2)
+{
+    if(root == NULL)
+    {
+        return NULL;
+    }
 
-//     if(root->data == n1 || root->data == n2)
-//     {
-//         return root;
-//     }
+    if(root->data == n1 || root->data == n2)
+    {
+        return root;
+    }
 
-//     Node*  left = LCA(root->left , n1 , n2);
-//     Node* right = LCA(root->right , n1 , n2);
+    Node*  left = LCA(root->left , n1 , n2);
+    Node* right = LCA(root->right , n1 , n2);
 
-//     if()
-// }
+    if(left && right) return root;
+    if(left!=NULL) return left;
+    if(right!=NULL) return right;
+}
 
 int main()
 {
@@ -94,6 +96,8 @@ int main()
     */
     int n1 = 6;
     int n2 = 7;
-    cout <<"The lowest common ancestor of "<<n1<<" and "<<n2<<" is : "<<lowestCommonAncestor1(root, n1, n2) << endl;
+    // cout <<"The lowest common ancestor of "<<n1<<" and "<<n2<<" is : "<<lowestCommonAncestor1(root, n1, n2) << endl;
+    Node* ans = LCA(root , n1 , n2);
+    cout <<"The lowest common ancestor of "<<n1<<" and "<<n2<<" is : "<<ans->data << endl;
     return 0;
 }
