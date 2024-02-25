@@ -1,17 +1,43 @@
 // templated SDN
-def handle_spoof(self, attacker_ip, attacker_mac, msg):
+// def handle_spoof(self, attacker_ip, attacker_mac, msg):
+//     actions = []
+//     in_port = msg.match['in_port']
+//     datapath = msg.datapath
+//     ofproto = datapath.ofproto
+//     parser = datapath.ofproto_parser
+//     inst = [parser.OFPInstructionActions(ofproto.OFPIT_CLEAR_ACTIONS, [])]
+//     match = parser.OFPMatch(in_port=in_port, eth_src=attacker_mac, ipv4_src=attacker_ip)
+//     mod = parser.OFPFlowMod(
+//         datapath=datapath, match=match, idle_timeout=60, hard_timeout=60, priority=20, instructions=inst
+//     )
+//     datapath.send_msg(mod)
+//     self.logger.info("\033[1;31m" + "Blocked traffic from IP %s and MAC %s on port %s" + "\033[0m", attacker_ip, attacker_mac, in_port)
+
+def handle_spoof(self, mac, msg):
     actions = []
     in_port = msg.match['in_port']
     datapath = msg.datapath
     ofproto = datapath.ofproto
     parser = datapath.ofproto_parser
     inst = [parser.OFPInstructionActions(ofproto.OFPIT_CLEAR_ACTIONS, [])]
-    match = parser.OFPMatch(in_port=in_port, eth_src=attacker_mac, ipv4_src=attacker_ip)
-    mod = parser.OFPFlowMod(
-        datapath=datapath, match=match, idle_timeout=60, hard_timeout=60, priority=20, instructions=inst
-    )
+    match = parser.OFPMatch(in_port=in_port)
+    
+    # Block the specific port
+    block_actions = [parser.OFPActionOutput(ofproto.OFPP_NONE, 0)]
+    block_inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, block_actions)]
+    block_mod = parser.OFPFlowMod(datapath=datapath, match=match, priority=20, instructions=block_inst)
+    
+    # Install flow to block the port
+    datapath.send_msg(block_mod)
+    
+    # Set idle_timeout and hard_timeout for blocking
+    mod = parser.OFPFlowMod(datapath=datapath, match=match, idle_timeout=60, hard_timeout=60, priority=10, instructions=inst)
+    
+    # Sending the flow mod
     datapath.send_msg(mod)
-    self.logger.info("\033[1;31m" + "Blocked traffic from IP %s and MAC %s on port %s" + "\033[0m", attacker_ip, attacker_mac, in_port)
+    
+    self.logger.info("\033[1;31m" + "Installed an entry to block ARP spoofing on port %s for 60 seconds" + "\033[0m", in_port)
+
 
 
 
